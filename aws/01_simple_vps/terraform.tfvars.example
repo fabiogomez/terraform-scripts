@@ -1,0 +1,3 @@
+# Aquí va la clave SSH pública
+ssh_key="/mnt/c/Users/Fabio/.ssh/id_rsa.pub"
+vpc_id="vpc-0cc82a1ba9068cbff"
