@@ -8,7 +8,7 @@
         name: unzip
       changed_when: false
     
-    - name: Download awscli2 installer.
+    - name: Download awscli2 installer
       ansible.builtin.unarchive:
         src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: "/tmp"
