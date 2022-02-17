@@ -4,25 +4,30 @@
     mysql_root_password: $MYSQLPASS
   tasks:
     - name: Install unzip
-      package: 
+      package:
         name: unzip
       changed_when: false
-    
-    - name: Download awscli2 installer
-      ansible.builtin.unarchive:
-        src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-        dest: "/tmp"
-        remote_src: true
-        creates: '/tmp/aws'
-        mode: 0755
 
-    - name: Install awscliv2
-      ansible.builtin.command:
-      args:
+    - name: Download awscliv2.
+      get_url: url="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" dest=/tmp
+
+    - name: Download awscli2 installer.
+      unarchive:
+        src: "/tmp/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp"
+        creates: '/tmp/aws'
+        remote_src: yes
+        mode: 0755
+      become: true
+
+
+    - name: Install awscliv2.
+      command:
         cmd: "/tmp/aws/install"
         creates: /usr/local/bin/aws
       become: true
       register: aws_install
+
 
     - name: Add PGP key
       apt_key:
@@ -38,6 +43,6 @@
         name: '{{item}}'
         state: present
         update_cache: yes
-        allow_unauthenticated: yes
       with_items:
         - mysql-server
+      become: yes
