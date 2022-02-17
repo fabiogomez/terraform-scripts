@@ -56,7 +56,8 @@ data "template_file" "userdata" {
 }
 
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
+  //ami           = data.aws_ami.ubuntu.id
+  ami = "ami-0688ba7eeeeefe3cd"
   instance_type = "t3.micro"
   key_name = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [

@@ -5,10 +5,11 @@ export PATH="$PATH:/usr/bin"
 MYSQLPASS="5TQRRWDSFF98"
 DBNAME="test_prod_12"
 sudo apt-get update
+pwd
 
 #install mysql and aws cli using ansible
 sudo apt --assume-yes install ansible
-sudo git clone git@github.com:fabiogomez/terraform-scripts.git 
+sudo git clone https://github.com/fabiogomez/terraform-scripts.git
 sudo cp terraform-scripts/aws/01_mysql_backup/ansible/hosts /etc/ansible/
 sudo ansible-playbook  terraform-scripts/aws/01_mysql_backup/ansible/main.yml
 
