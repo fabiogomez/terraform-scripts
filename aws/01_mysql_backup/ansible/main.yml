@@ -1,0 +1,43 @@
+---
+- hosts: mysqlserver
+  vars:
+    mysql_root_password: $MYSQLPASS
+  tasks:
+    - name: Install unzip
+      package: 
+        name: unzip
+      changed_when: false
+    
+    - name: Download awscli2 installer.
+      unarchive:
+        src: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+        dest: "/tmp"
+        remote_src: true
+        creates: '/tmp/aws'
+        mode: 0755
+
+    - name: Install awscliv2
+      command:
+      args:
+        cmd: "/tmp/aws/install"
+        creates: /usr/local/bin/aws
+      become: true
+      register: aws_install
+
+    - name: Add PGP key
+      apt_key:
+        keyserver: hkp://pgp.mit.edu:80
+        id: 5072E1F5
+
+    - name: Add official APT repository
+      apt_repository:
+        repo: 'deb http://repo.mysql.com/apt/debian/ stretch mysql-5.7'
+
+    - name: Install mysql-server
+      apt:
+        name: '{{item}}'
+        state: present
+        update_cache: yes
+        allow_unauthenticated: yes
+      with_items:
+        - mysql-server

@@ -1,0 +1,2 @@
+[mysqlserver]
+localhost ansible_connection=local
