@@ -9,7 +9,7 @@
       changed_when: false
     
     - name: Download awscli2 installer.
-      unarchive:
+      ansible.builtin.unarchive:
         src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: "/tmp"
         remote_src: true
@@ -17,7 +17,7 @@
         mode: 0755
 
     - name: Install awscliv2
-      command:
+      ansible.builtin.command:
       args:
         cmd: "/tmp/aws/install"
         creates: /usr/local/bin/aws
