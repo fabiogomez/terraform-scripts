@@ -6,7 +6,7 @@ DATE_RESTORE=`date +%Y%m%d`
 #arrays with dbs info
 DBNAMES=("gateways_test" "prod_12_test" "nd_test")
 FILES_PRE=("domus_gateways-UTF8-$DATE_BACKUP" "prod_12-UTF8-$DATE_BACKUP" "nd2-UTF8-$DATE_BACKUP")
-TABLES_VERIFY=("inmuebles" "opportunities" "invoices")
+TABLES_VERIFY=("invoices" "inmuebles" "opportunities" )
 MYSQLPASS="5TQRRWDSFF98"
 DBNAME="test_gateways"
 TABLE_TEST="invoices"
@@ -30,7 +30,7 @@ do
     #import database
     sudo mysql -u root -p$MYSQLPASS  -e "CREATE DATABASE IF NOT EXISTS ${DBNAMES[$i]} CHARACTER SET utf8 COLLATE utf8_general_ci;"
     sudo mysql -u root -p$MYSQLPASS  -e "SET GLOBAL log_bin_trust_function_creators = 1;"
-    sudo mysql  -u root -p$MYSQLPASS  ${DBNAMES[$i]} <  "$CARPETA/$NAMEFILE"
+    sudo mysql  -u root -p$MYSQLPASS  ${DBNAMES[$i]} <  "$CARPETA/$NAMEFILE" > /dev/null 
 
     #delete folder and file
     rm -rf $CARPETA/$NAMEFILE
@@ -39,7 +39,7 @@ do
     echo "RESULTADO BASE DE DATOS ${DBNAMES[$i]} " >> report.txt
     echo "TABLAS: " >> report.txt
     mysql -u root -p$MYSQLPASS  -e "use ${DBNAMES[$i]}; SHOW TABLES " | awk '{new_var=$1" ok";print new_var}' >> report.txt
-    echo "CANTIDAD TABLA ${TABLES_VERIFY[$i]} " >> report.txt
+    echo "CANTIDAD TABLA ${TABLES_VERIFY[$i]} " >> report.txt 
     mysql -u root -p$MYSQLPASS -e "SELECT count(*) from ${DBNAMES[$i]}.${TABLES_VERIFY[$i]};" >> report.txt
     mysql -u root -p$MYSQLPASS -e "DROP DATABASE ${DBNAMES[$i]};"
 
