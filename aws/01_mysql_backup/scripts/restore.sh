@@ -16,7 +16,7 @@ clear
 sudo touch report.txt
 array_length=${#DBNAMES[*]}
 
-for ((i=0; i<=$(( $array_length)); i++))
+for ((i=0; i<$(( $array_length)); i++))
 do
     #download backup and extract
     NAMEFILE_TAR=`aws s3 ls s3://dmdomus30dias/2020/$CARPETA/ | awk '{print $4}' | grep "${FILES_PRE[$i]}" | head -1`
@@ -38,12 +38,12 @@ do
     echo "RESULTADO BASE DE DATOS ${DBNAMES[$i]} \n\r" >> report.txt
     echo "TABLAS: \n\r" >> report.txt
     mysql -u root -p$MYSQLPASS  -e "use ${DBNAMES[$i]}; SHOW TABLES " | awk '{new_var=$1" \\n\\r";print new_var}' >> report.txt
-    echo "\n\rCANTIDAD TABLA ${$TABLES_VERIFY[$i]} \n\r" >> report.txt
-    mysql -u root -p$MYSQLPASS -e "SELECT count(*) from ${DBNAMES[$i]}.${$TABLES_VERIFY[$i]};" >> report.txt
+    echo "\n\rCANTIDAD TABLA ${TABLES_VERIFY[$i]} \n\r" >> report.txt
+    mysql -u root -p$MYSQLPASS -e "SELECT count(*) from ${DBNAMES[$i]}.${TABLES_VERIFY[$i]};" >> report.txt
     mysql -u root -p$MYSQLPASS -e "DROP DATABASE ${DBNAMES[$i]};"
 
     
 done
 
 # sends the results to email
-sudo aws ses send-raw-email --cli-binary-format raw-in-base64-out  --raw-message file://terraform-scripts/aws/01_mysql_backup/message.json
+sudo aws ses send-raw-email --cli-binary-format raw-in-base64-out  --raw-message file:///terraform-scripts/aws/01_mysql_backup/message.json
