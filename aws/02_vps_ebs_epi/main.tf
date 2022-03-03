@@ -2,41 +2,41 @@ variable "ssh_key_path" {}
 variable "project_name" {}
 variable "region_name" {}
 variable "availability_zone" {}
-variable "vpc_id"{}
+variable "vpc_id" {}
 variable "instance_type" {}
 
 provider "aws" {
-  region      = var.region_name
+  region = var.region_name
 }
 
 data "aws_ami" "ubuntu" {
   most_recent = true
 
   filter {
-    name      = "name"
-    values    = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
 
   filter {
-    name      = "virtualization-type"
-    values    = ["hvm"]
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 
-  owners      = ["099720109477"] # Canonical
+  owners = ["099720109477"] # Canonical
 }
 
 
 resource "aws_key_pair" "deployer-key" {
-  key_name      = "${var.project_name}-deployer-key"
-  public_key    = file(var.ssh_key_path)
+  key_name   = "${var.project_name}-deployer-key"
+  public_key = file(var.ssh_key_path)
 }
 
 
 resource "aws_ebs_volume" "web" {
   availability_zone = var.availability_zone
   size              = 4
-  type = "gp3"
-  encrypted =   true
+  type              = "gp3"
+  encrypted         = true
   tags = {
     Name = "${var.project_name}-web-ebs"
   }
@@ -67,29 +67,29 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_security_group" "allow_http" {
-    name        = "allow_http"
-    description = "Allow http inbound traffic"
-    vpc_id      = var.vpc_id
+  name        = "allow_http"
+  description = "Allow http inbound traffic"
+  vpc_id      = var.vpc_id
 
-    ingress {
-      description = "http from VPC"
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    egress {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    tags = {
-      Name = "allow_http"
-    }
+  ingress {
+    description = "http from VPC"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_http"
+  }
+}
 
 
 // 16kB tamaño maximo
@@ -98,25 +98,25 @@ data "template_file" "userdata" {
 }
 
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
+  ami               = data.aws_ami.ubuntu.id
   availability_zone = var.availability_zone
-  instance_type = var.instance_type
+  instance_type     = var.instance_type
   vpc_security_group_ids = [
     aws_security_group.allow_ssh.id,
     aws_security_group.allow_http.id
   ]
   user_data = data.template_file.userdata.rendered
-  key_name      = aws_key_pair.deployer-key.key_name
-  tags          = {
+  key_name  = aws_key_pair.deployer-key.key_name
+  tags = {
     Name = "${var.project_name}-web-instance"
   }
 }
 
 resource "aws_eip" "eip" {
-  instance      = aws_instance.web.id
-  vpc           = true
-  tags          = {
-    Name        = "${var.project_name}-web-epi"
+  instance = aws_instance.web.id
+  vpc      = true
+  tags = {
+    Name = "${var.project_name}-web-epi"
   }
 }
 resource "aws_volume_attachment" "web" {
