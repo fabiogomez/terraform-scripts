@@ -10,7 +10,7 @@ MYSQLPASS="5TQRRWDSFF98"
 DBNAME="test_gateways"
 TABLE_TEST="invoices"
 CARPETA=`date +%Y%m`
-
+clear
 
 #Restore all databases
 sudo touch report.txt
