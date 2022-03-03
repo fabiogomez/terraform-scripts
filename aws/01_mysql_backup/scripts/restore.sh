@@ -2,9 +2,10 @@
 
 #declare variables
 DATE_BACKUP=`date -d yesterday +%Y%m%d`
+DATE_RESTORE=`date +%Y%m%d`
 #arrays with dbs info
-DBNAMES=("prod_12_test" "nd_test" "gateways_test")
-FILES_PRE=("prod_12-UTF8-$DATE_BACKUP" "nd2-UTF8-$DATE_BACKUP" "domus_gateways-UTF8-$DATE_BACKUP" )
+DBNAMES=("gateways_test" "prod_12_test" "nd_test")
+FILES_PRE=("domus_gateways-UTF8-$DATE_BACKUP" "prod_12-UTF8-$DATE_BACKUP" "nd2-UTF8-$DATE_BACKUP")
 TABLES_VERIFY=("inmuebles" "opportunities" "invoices")
 MYSQLPASS="5TQRRWDSFF98"
 DBNAME="test_gateways"
@@ -35,10 +36,10 @@ do
     rm -rf $CARPETA/$NAMEFILE
     
     #export result    
-    echo "RESULTADO BASE DE DATOS ${DBNAMES[$i]} \n\r" >> report.txt
-    echo "TABLAS: \n\r" >> report.txt
-    mysql -u root -p$MYSQLPASS  -e "use ${DBNAMES[$i]}; SHOW TABLES " | awk '{new_var=$1" \\n\\r";print new_var}' >> report.txt
-    echo "\n\rCANTIDAD TABLA ${TABLES_VERIFY[$i]} \n\r" >> report.txt
+    echo "RESULTADO BASE DE DATOS ${DBNAMES[$i]} " >> report.txt
+    echo "TABLAS: " >> report.txt
+    mysql -u root -p$MYSQLPASS  -e "use ${DBNAMES[$i]}; SHOW TABLES " | awk '{new_var=$1" ok";print new_var}' >> report.txt
+    echo "CANTIDAD TABLA ${TABLES_VERIFY[$i]} " >> report.txt
     mysql -u root -p$MYSQLPASS -e "SELECT count(*) from ${DBNAMES[$i]}.${TABLES_VERIFY[$i]};" >> report.txt
     mysql -u root -p$MYSQLPASS -e "DROP DATABASE ${DBNAMES[$i]};"
 
@@ -46,4 +47,11 @@ do
 done
 
 # sends the results to email
-sudo aws ses send-raw-email --cli-binary-format raw-in-base64-out  --raw-message file:///terraform-scripts/aws/01_mysql_backup/message.json
+mkdir reporte
+cp /var/log/user-data.log /reporte
+cp /report.txt /reporte
+tar -czvf reporte.tar.gz /reporte
+KEY_REPORT_FILE_S3="2020/$CARPETA/reports/report-$DATE_RESTORE.tar.gz"
+sudo aws s3 cp reporte.tar.gz s3://dmdomus30dias/$KEY_REPORT_FILE_S3 --acl public-read
+echo '{"Data": "From: notifications@domus.la\nTo: desarrollo@domus.la\nSubject:REPORT RESTORE DATABASE\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/plain\n\nTHE PROCESS OF BACKUP FINISHED PLEASE GET INFO HERE https://dmdomus30dias.s3.us-west-2.amazonaws.com/'$(echo $KEY_REPORT_FILE_S3)' .\n\n--NextPart"}' > message.json
+sudo aws ses send-raw-email --cli-binary-format raw-in-base64-out  --raw-message file://message.json
